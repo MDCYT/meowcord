@@ -1,0 +1,212 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-10-09T22:30:00+00:00",
+    "name": "Meowcord",
+    "author": "support@meowcord.com",
+    "description": "Meowcord es un servidor auto-alojado compatible con la API y Gateway de Discord, con cliente web Discord integrado (Equicord) y soporte de voz/video WebRTC (Pion SFU).",
+    "features": null,
+    "docker_images": {
+        "GitHub Container Registry (MDC)": "ghcr.io/MDCYT/meowcord:latest"
+    },
+    "file_denylist": [],
+    "startup": "/app/docker/entrypoint.sh server",
+    "config": {
+        "files": "{}",
+        "startup": "{\r\n    \"done\": \"[Server] Listening on port\"\r\n}",
+        "logs": "{}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/ash\r\necho \"=== Configurando carpetas persistentes de Meowcord ===\"\r\nmkdir -p /mnt/server/data /mnt/server/storage /mnt/server/client/cache /mnt/server/client/cache_compressed\r\nchmod -R 777 /mnt/server\r\necho \"=== Estructura preparada exitosamente ===\"\r\necho \"En el primer inicio, Meowcord descargará y preparará los componentes del cliente web automáticamente.\"",
+            "container": "ghcr.io/pterodactyl/installers:alpine",
+            "entrypoint": "ash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Dominio Público de la Instancia",
+            "description": "El dominio público o IP con puerto donde se accederá a Meowcord (ej: https://meowcord.tudominio.com o http://123.45.67.89:3001). NO incluyas barras '/' al final.",
+            "env_variable": "DOMAIN",
+            "default_value": "http://localhost:3001",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Conexión a Base de Datos (PostgreSQL)",
+            "description": "URL de conexión a PostgreSQL (ej: postgres://usuario:password@host:5432/meowcord). Meowcord creará automáticamente las tablas y migraciones.",
+            "env_variable": "DATABASE",
+            "default_value": "postgres://fosscord:password@127.0.0.1:5432/fosscord",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Puerto del Servidor",
+            "description": "Puerto HTTP en el que Meowcord atenderá las peticiones web y API.",
+            "env_variable": "SERVER_PORT",
+            "default_value": "3001",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|numeric|between:1,65535",
+            "field_type": "text"
+        },
+        {
+            "name": "Nombre de la Instancia",
+            "description": "Nombre visible para la instancia de Meowcord.",
+            "env_variable": "INSTANCE_NAME",
+            "default_value": "Meowcord Server",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Habilitar WebRTC Voice (SFU)",
+            "description": "Habilita el servidor de voz pion-sfu integrado en el contenedor. Si está activado ('true'), debes configurar WRTC_PUBLIC_IP y asignar un puerto UDP en WRTC_PORT.",
+            "env_variable": "ENABLE_SFU",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:true,false",
+            "field_type": "text"
+        },
+        {
+            "name": "IP Pública para WebRTC",
+            "description": "IP pública accesible por los clientes para conectar voz y video por UDP (requerido si ENABLE_SFU es true).",
+            "env_variable": "WRTC_PUBLIC_IP",
+            "default_value": "127.0.0.1",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Puerto UDP para WebRTC",
+            "description": "Puerto UDP para las llamadas de voz y video. Debe coincidir con un puerto asignado en Pterodactyl.",
+            "env_variable": "WRTC_PORT",
+            "default_value": "50000",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|numeric|between:1,65535",
+            "field_type": "text"
+        },
+        {
+            "name": "Trusted Proxies",
+            "description": "Lista o rangos de proxies de confianza (ej: uniquelocal, 127.0.0.1 o rangos de Cloudflare).",
+            "env_variable": "TRUSTED_PROXIES",
+            "default_value": "uniquelocal",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Aplicar Migraciones de DB Automáticas",
+            "description": "Aplica las migraciones pendientes de PostgreSQL automáticamente al iniciar.",
+            "env_variable": "APPLY_DB_MIGRATIONS",
+            "default_value": "true",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:true,false",
+            "field_type": "text"
+        },
+        {
+            "name": "Concurrencia de Descarga de Cliente",
+            "description": "Número de hilos para descargar y procesar los assets del cliente oficial en el primer inicio (1 a 32).",
+            "env_variable": "CLIENT_CONCURRENCY",
+            "default_value": "8",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|numeric|between:1,32",
+            "field_type": "text"
+        },
+        {
+            "name": "Ruta de config.json",
+            "description": "Ruta interna donde se almacena el archivo config.json en Pterodactyl.",
+            "env_variable": "CONFIG_PATH",
+            "default_value": "/home/container/data/config.json",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Ruta de Archivos Almacenados",
+            "description": "Ruta interna donde se guardan avatares, banners, stickers y adjuntos.",
+            "env_variable": "STORAGE_LOCATION",
+            "default_value": "/home/container/storage",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Entorno Node",
+            "description": "Modo de ejecución del servidor.",
+            "env_variable": "NODE_ENV",
+            "default_value": "production",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Host SMTP (Opcional)",
+            "description": "Servidor de correo SMTP para invitaciones y recuperación de cuentas (ej: smtp.mailgun.org).",
+            "env_variable": "SMTP_HOST",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Puerto SMTP",
+            "description": "Puerto del servidor SMTP (587 para STARTTLS o 465 para SSL/TLS).",
+            "env_variable": "SMTP_PORT",
+            "default_value": "587",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|numeric",
+            "field_type": "text"
+        },
+        {
+            "name": "Usuario SMTP",
+            "description": "Usuario para autenticación con el servidor SMTP.",
+            "env_variable": "SMTP_USERNAME",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Contraseña SMTP",
+            "description": "Contraseña para autenticación con el servidor SMTP.",
+            "env_variable": "SMTP_PASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Email Remitente (FROM)",
+            "description": "Dirección de correo remitente para los emails enviados (ej: noreply@tudominio.com).",
+            "env_variable": "EMAIL_FROM",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        }
+    ]
+}

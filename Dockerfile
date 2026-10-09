@@ -41,9 +41,10 @@ RUN bun run build:src
 
 FROM oven/bun:1.4-slim AS server
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates ffmpeg \
+    && apt-get install -y --no-install-recommends ca-certificates ffmpeg curl git iproute2 procps \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
+COPY --from=sfu-build /out/pion-sfu /usr/local/bin/pion-sfu
 ENV NODE_ENV=production \
     PORT=3001 \
     CONFIG_PATH=/data/state/config.json \
@@ -62,10 +63,14 @@ COPY docker/entrypoint.sh docker/
 ARG REVISION=""
 ARG REVISION_TIME="0"
 RUN if [ -n "$REVISION" ]; then printf '{"rev":"%s","lastModified":%s}\n' "$REVISION" "$REVISION_TIME" > .rev; fi \
-    && mkdir -p /data/state /data/storage /data/client /run/sfu \
+    && id -u container >/dev/null 2>&1 || useradd -d /home/container -m -s /bin/bash -u 998 container 2>/dev/null || useradd -d /home/container -m -s /bin/bash container 2>/dev/null || true \
+    && mkdir -p /home/container /data/state /data/storage /data/client /run/sfu \
     && ln -s /data/client/cache assets/cache \
     && ln -s /data/client/cache_compressed assets/cache_compressed \
-    && chown -R bun:bun /data /run/sfu
+    && chmod +x docker/entrypoint.sh \
+    && ln -sf /app/docker/entrypoint.sh /entrypoint.sh \
+    && chown -R bun:bun /data /run/sfu /app \
+    && chmod -R 777 /data /run/sfu /home/container /tmp
 USER bun
 EXPOSE 3001
 ENTRYPOINT ["/app/docker/entrypoint.sh"]
