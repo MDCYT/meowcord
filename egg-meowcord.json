@@ -4,13 +4,13 @@
         "version": "PTDL_v2",
         "update_url": null
     },
-    "exported_at": "2026-10-09T22:30:00+00:00",
+    "exported_at": "2024-04-02T14:13:31+02:00",
     "name": "Meowcord",
     "author": "support@meowcord.com",
     "description": "Meowcord es un servidor auto-alojado compatible con la API y Gateway de Discord, con cliente web Discord integrado (Equicord) y soporte de voz/video WebRTC (Pion SFU).",
     "features": null,
     "docker_images": {
-        "GitHub Container Registry (MDC)": "ghcr.io/MDCYT/meowcord:latest"
+        "Meowcord Latest": "ghcr.io/MDCYT/meowcord:latest"
     },
     "file_denylist": [],
     "startup": "/app/docker/entrypoint.sh server",
@@ -22,9 +22,9 @@
     },
     "scripts": {
         "installation": {
-            "script": "#!/bin/ash\r\necho \"=== Configurando carpetas persistentes de Meowcord ===\"\r\nmkdir -p /mnt/server/data /mnt/server/storage /mnt/server/client/cache /mnt/server/client/cache_compressed\r\nchmod -R 777 /mnt/server\r\necho \"=== Estructura preparada exitosamente ===\"\r\necho \"En el primer inicio, Meowcord descargará y preparará los componentes del cliente web automáticamente.\"",
-            "container": "ghcr.io/pterodactyl/installers:alpine",
-            "entrypoint": "ash"
+            "script": "#!/bin/sh\r\necho \"=== Configurando carpetas persistentes de Meowcord ===\"\r\nmkdir -p /mnt/server/data /mnt/server/storage /mnt/server/client/cache /mnt/server/client/cache_compressed\r\nchmod -R 777 /mnt/server\r\necho \"=== Estructura preparada exitosamente ===\"",
+            "container": "alpine:latest",
+            "entrypoint": "sh"
         }
     },
     "variables": [
@@ -49,16 +49,6 @@
             "field_type": "text"
         },
         {
-            "name": "Puerto del Servidor",
-            "description": "Puerto HTTP en el que Meowcord atenderá las peticiones web y API.",
-            "env_variable": "SERVER_PORT",
-            "default_value": "3001",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "required|numeric|between:1,65535",
-            "field_type": "text"
-        },
-        {
             "name": "Nombre de la Instancia",
             "description": "Nombre visible para la instancia de Meowcord.",
             "env_variable": "INSTANCE_NAME",
@@ -70,12 +60,12 @@
         },
         {
             "name": "Habilitar WebRTC Voice (SFU)",
-            "description": "Habilita el servidor de voz pion-sfu integrado en el contenedor. Si está activado ('true'), debes configurar WRTC_PUBLIC_IP y asignar un puerto UDP en WRTC_PORT.",
+            "description": "Habilita el servidor de voz pion-sfu integrado en el contenedor (true o false). Si lo activas, debes configurar WRTC_PUBLIC_IP y asignar un puerto UDP en WRTC_PORT.",
             "env_variable": "ENABLE_SFU",
             "default_value": "false",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "required|string|in:true,false",
+            "rules": "required|string",
             "field_type": "text"
         },
         {
@@ -95,7 +85,7 @@
             "default_value": "50000",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "nullable|numeric|between:1,65535",
+            "rules": "nullable|numeric",
             "field_type": "text"
         },
         {
@@ -110,12 +100,12 @@
         },
         {
             "name": "Aplicar Migraciones de DB Automáticas",
-            "description": "Aplica las migraciones pendientes de PostgreSQL automáticamente al iniciar.",
+            "description": "Aplica las migraciones pendientes de PostgreSQL automáticamente al iniciar (true o false).",
             "env_variable": "APPLY_DB_MIGRATIONS",
             "default_value": "true",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "required|string|in:true,false",
+            "rules": "required|string",
             "field_type": "text"
         },
         {
@@ -125,12 +115,12 @@
             "default_value": "8",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "nullable|numeric|between:1,32",
+            "rules": "nullable|numeric",
             "field_type": "text"
         },
         {
             "name": "Ruta de config.json",
-            "description": "Ruta interna donde se almacena el archivo config.json en Pterodactyl.",
+            "description": "Ubicación del archivo config.json en el almacenamiento persistente de Pterodactyl.",
             "env_variable": "CONFIG_PATH",
             "default_value": "/home/container/data/config.json",
             "user_viewable": false,
@@ -140,7 +130,7 @@
         },
         {
             "name": "Ruta de Archivos Almacenados",
-            "description": "Ruta interna donde se guardan avatares, banners, stickers y adjuntos.",
+            "description": "Ubicación del directorio de subidas y archivos en Pterodactyl.",
             "env_variable": "STORAGE_LOCATION",
             "default_value": "/home/container/storage",
             "user_viewable": false,
@@ -180,7 +170,7 @@
         },
         {
             "name": "Usuario SMTP",
-            "description": "Usuario para autenticación con el servidor SMTP.",
+            "description": "Usuario o dirección de correo para autenticación con el servidor SMTP.",
             "env_variable": "SMTP_USERNAME",
             "default_value": "",
             "user_viewable": true,
