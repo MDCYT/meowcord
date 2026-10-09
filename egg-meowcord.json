@@ -10,7 +10,7 @@
     "description": "Meowcord es un servidor auto-alojado compatible con la API y Gateway de Discord, con cliente web Discord integrado (Equicord) y soporte de voz/video WebRTC (Pion SFU).",
     "features": null,
     "docker_images": {
-        "Meowcord Latest": "ghcr.io/MDCYT/meowcord:latest"
+        "Meowcord Latest": "ghcr.io/mdcyt/meowcord:latest"
     },
     "file_denylist": [],
     "startup": "/app/docker/entrypoint.sh server",
