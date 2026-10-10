@@ -91,8 +91,8 @@ export class WebrtcServer {
                     }, delay);
             });
         } catch (e) {
-            console.log(`[WebRTC] ${yellow("WEBRTC disabled")}`);
             const reason = e instanceof Error ? e.message : "No WebRTC library is configured, or it failed to load or connect";
+            console.log(`[WebRTC] ${yellow("WEBRTC disabled")}: ${reason}`);
             VoiceHealth.register(async () => ({
                 enabled: false,
                 library: process.env.WRTC_LIBRARY ?? null,

@@ -15,14 +15,18 @@ if [ -d "/home/container" ]; then
 fi
 
 # Port mapping: Pterodactyl assigns SERVER_PORT, Meowcord expects PORT
-if [ -n "${SERVER_PORT}" ] && [ -z "${PORT}" ]; then
+if [ -n "${SERVER_PORT}" ]; then
     export PORT="${SERVER_PORT}"
 fi
 
 # Built-in WebRTC SFU support
 if [ "${ENABLE_SFU}" = "true" ] || [ "${ENABLE_SFU}" = "1" ]; then
-    if [ -x "/usr/local/bin/pion-sfu" ] && [ -z "${PION_SFU_BIN}" ]; then
+    if [ -f "/usr/local/bin/pion-sfu" ] && [ -z "${PION_SFU_BIN}" ]; then
+        chmod +x /usr/local/bin/pion-sfu 2>/dev/null || true
         export PION_SFU_BIN="/usr/local/bin/pion-sfu"
+    fi
+    if [ -n "${WRTC_PORT}" ] && [ -z "${WRTC_PORT_MIN}" ]; then
+        export WRTC_PORT_MIN="${WRTC_PORT}"
     fi
 fi
 

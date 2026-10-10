@@ -67,7 +67,7 @@ RUN if [ -n "$REVISION" ]; then printf '{"rev":"%s","lastModified":%s}\n' "$REVI
     && mkdir -p /home/container /data/state /data/storage /data/client /run/sfu \
     && ln -s /data/client/cache assets/cache \
     && ln -s /data/client/cache_compressed assets/cache_compressed \
-    && chmod +x docker/entrypoint.sh \
+    && chmod +x docker/entrypoint.sh /usr/local/bin/pion-sfu \
     && ln -sf /app/docker/entrypoint.sh /entrypoint.sh \
     && chown -R bun:bun /data /run/sfu /app \
     && chmod -R 777 /data /run/sfu /home/container /tmp
