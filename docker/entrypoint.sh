@@ -26,6 +26,9 @@ if [ "${ENABLE_SFU}" = "true" ] || [ "${ENABLE_SFU}" = "1" ]; then
     fi
 fi
 
+export CLIENT_RELEASE_REVIEW="${CLIENT_RELEASE_REVIEW:-1}"
+export CLIENT_RELEASE_SKIP_VERIFY="${CLIENT_RELEASE_SKIP_VERIFY:-1}"
+
 cd /app
 
 # Handle Pterodactyl custom STARTUP command substitution

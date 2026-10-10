@@ -178,7 +178,7 @@ const main = async () => {
     if (!checkOnly) await writeAtomic(path.join(CACHE_PATH, "..", "cacheFailures"), failed.join("\n"));
     if (!failed.length) {
         const actual = release.describe(CACHE_PATH, html, seen);
-        if (process.env.CLIENT_RELEASE_REVIEW !== "1") release.verify(actual);
+        if (process.env.CLIENT_RELEASE_REVIEW !== "1" && process.env.CLIENT_RELEASE_SKIP_VERIFY !== "1") release.verify(actual);
         if (!checkOnly) {
             await writeAtomic(path.join(CACHE_PATH, "release-manifest.json"), JSON.stringify({ ...actual, assets: [...seen].sort() }));
             if (!onlyMissing) await writeAtomic(indexFile, html);

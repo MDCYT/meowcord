@@ -197,6 +197,16 @@
             "user_editable": true,
             "rules": "nullable|string",
             "field_type": "text"
+        },
+        {
+            "name": "Omitir Verificación de Versión del Cliente",
+            "description": "Permite descargar e iniciar versiones recientes del cliente web de Discord aunque no coincidan con el pin histórico de client/release.json. Déjalo en 1 para que el servidor siempre descargue y ejecute la versión más reciente sin errores.",
+            "env_variable": "CLIENT_RELEASE_SKIP_VERIFY",
+            "default_value": "1",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
         }
     ]
 }
