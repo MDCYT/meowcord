@@ -10,7 +10,7 @@ type Shade = { ch: "P" | "S"; c0: number; c1: number; def: string };
 type BadgeNode = string | { t: string; a: Record<string, string | number | Shade>; c: BadgeNode[] };
 type Templates = Record<string, { name: string; svg: BadgeNode }>;
 
-const TEMPLATE_PATH = path.join(ASSETS_FOLDER, "cache", "clan-badges.json");
+const TEMPLATE_PATH = process.env.CLIENT_CACHE_PATH ? path.join(path.resolve(process.env.CLIENT_CACHE_PATH), "clan-badges.json") : path.join(ASSETS_FOLDER, "cache", "clan-badges.json");
 let templates: Templates | null = null;
 let loadedFrom = 0;
 

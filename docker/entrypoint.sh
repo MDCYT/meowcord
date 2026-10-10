@@ -1,5 +1,6 @@
 #!/bin/sh
 set -e
+
 # Support Pterodactyl environment
 if [ -d "/home/container" ]; then
     export HOME="/home/container"
@@ -8,11 +9,9 @@ if [ -d "/home/container" ]; then
     # Default persistent paths inside /home/container for Pterodactyl
     export CONFIG_PATH="${CONFIG_PATH:-/home/container/data/config.json}"
     export STORAGE_LOCATION="${STORAGE_LOCATION:-/home/container/storage}"
-
-    # Relink assets/cache to Pterodactyl persistent client directory
-    rm -rf /app/assets/cache /app/assets/cache_compressed 2>/dev/null || true
-    ln -sf /home/container/client/cache /app/assets/cache
-    ln -sf /home/container/client/cache_compressed /app/assets/cache_compressed
+    export CLIENT_CACHE_PATH="${CLIENT_CACHE_PATH:-/home/container/client/cache}"
+    export CLIENT_COMPRESSED_PATH="${CLIENT_COMPRESSED_PATH:-/home/container/client/cache_compressed}"
+    export PION_SFU_IPC="${PION_SFU_IPC:-/tmp/sfu.sock}"
 fi
 
 # Port mapping: Pterodactyl assigns SERVER_PORT, Meowcord expects PORT
@@ -36,15 +35,13 @@ if [ -n "${STARTUP}" ] && [ -z "$1" ]; then
     exec /bin/sh -c "${MODIFIED_STARTUP}"
 fi
 
+CACHE_DIR="${CLIENT_CACHE_PATH:-assets/cache}"
+COMPRESSED_DIR="${CLIENT_COMPRESSED_PATH:-assets/cache_compressed}"
+
 case "${1:-server}" in
 client)
-    CLIENT_CACHE_DIR="/data/client"
-    if [ -d "/home/container/client" ]; then
-        CLIENT_CACHE_DIR="/home/container/client"
-    fi
-    mkdir -p "${CLIENT_CACHE_DIR}/cache" "${CLIENT_CACHE_DIR}/cache_compressed" 2>/dev/null || true
-
-    if [ -f assets/cache/index.html ] && [ "$2" != "--force" ]; then
+    mkdir -p "${CACHE_DIR}" "${COMPRESSED_DIR}" 2>/dev/null || true
+    if [ -f "${CACHE_DIR}/index.html" ] && [ "$2" != "--force" ]; then
         echo "[client] using the cached client, run the client service with --force to fetch the current one"
     else
         bun scripts/client.js
@@ -55,7 +52,7 @@ client)
     bun scripts/compress-client.js
     ;;
 server)
-    if [ ! -f assets/cache/index.html ]; then
+    if [ ! -f "${CACHE_DIR}/index.html" ]; then
         echo "[server] client cache is empty, generating client assets automatically..."
         /app/docker/entrypoint.sh client
     fi

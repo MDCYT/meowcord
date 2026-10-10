@@ -31,7 +31,7 @@ import {
 } from "@spacebar/util";
 
 const ASSET_FOLDER_PATH = path.join(__dirname, "..", "..", "assets");
-const CACHE_PATH = path.join(ASSET_FOLDER_PATH, "cache");
+const CACHE_PATH = process.env.CLIENT_CACHE_PATH ? path.resolve(process.env.CLIENT_CACHE_PATH) : path.join(ASSET_FOLDER_PATH, "cache");
 const COMPRESSED_PATH = process.env.CLIENT_COMPRESSED_PATH ? path.resolve(process.env.CLIENT_COMPRESSED_PATH) : path.join(ASSET_FOLDER_PATH, "cache_compressed");
 const PATCH_PATH = path.join(ASSET_FOLDER_PATH, "client_patches");
 const VENCORD_PATH = path.join(ASSET_FOLDER_PATH, "vencord");
