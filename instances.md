@@ -21,3 +21,4 @@ public meowcord instances. this file is generated from [instances.json](instance
 | Termcord | [termcord.linux-user.fyi](https://termcord.linux-user.fyi) |  |
 | Hola Quetal | [dc.polo.beer](https://dc.polo.beer) |  |
 | GTDcord | [chat.gtdmc.org](https://chat.gtdmc.org) |  |
+| FemCord | [chat.femboy.cyou](https://chat.femboy.cyou) |  |
