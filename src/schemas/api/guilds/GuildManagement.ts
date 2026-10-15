@@ -19,6 +19,46 @@ export interface GuildProfileSettings {
     game_application_ids?: string[];
 }
 
+export interface GuildThemeCustomSettings {
+    /**
+     * @maxItems 10
+     * @items.pattern ^#[0-9a-fA-F]{6}$
+     */
+    colors: string[];
+    /**
+     * @maxItems 10
+     * @items.minimum 0
+     * @items.maximum 100
+     */
+    gradient_color_stops?: number[];
+    /**
+     * @minimum 0
+     * @maximum 360
+     */
+    gradient_angle?: number;
+    /**
+     * @minimum 0
+     * @maximum 100
+     */
+    base_mix?: number;
+}
+
+export interface GuildTheme {
+    preset_id: number | null;
+    custom_user_theme_settings: GuildThemeCustomSettings | null;
+    enabled: boolean;
+}
+
+export interface GuildThemeModifySchema {
+    /**
+     * @minimum 0
+     * @maximum 2147483647
+     */
+    preset_id?: number | null;
+    custom_user_theme_settings?: GuildThemeCustomSettings | null;
+    enabled?: boolean;
+}
+
 export interface GuildProfileModifySchema {
     name?: string;
     description?: string | null;
