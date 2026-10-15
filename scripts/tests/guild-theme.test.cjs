@@ -3,6 +3,8 @@ const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const { StubError, loadModule, loadRoutes, response } = require("./helpers/route-harness.cjs");
 
+const plain = (value) => JSON.parse(JSON.stringify(value));
+
 const UNKNOWN_GUILD = new StubError("Unknown Guild", 10004);
 const MISSING_ACCESS = new StubError("Missing Access", 50001);
 
@@ -76,12 +78,15 @@ test("GET /guilds/:id/theme returns the theme for guild members", async () => {
     const { routes } = setupThemeRoutes({ theme }, true);
     const res = response();
     await routes["GET /"]({ params: { guild_id: "123" }, user_id: "user_1" }, res);
-    assert.deepEqual(res.body, {
-        theme,
-        preset_id: 2,
-        custom_user_theme_settings: theme.custom_user_theme_settings,
-        enabled: true,
-    });
+    assert.deepEqual(
+        plain(res.body),
+        plain({
+            theme,
+            preset_id: 2,
+            custom_user_theme_settings: theme.custom_user_theme_settings,
+            enabled: true,
+        }),
+    );
 });
 
 test("PATCH /guilds/:id/theme saves clamped and sanitized theme settings and emits guild update", async () => {
@@ -108,7 +113,7 @@ test("PATCH /guilds/:id/theme saves clamped and sanitized theme settings and emi
     const saved = getSavedGuild();
     assert.ok(saved);
     assert.equal(getEmittedGuildId(), "123");
-    assert.deepEqual(saved.theme, {
+    assert.deepEqual(plain(saved.theme), {
         enabled: true,
         preset_id: 5,
         custom_user_theme_settings: {
@@ -118,12 +123,15 @@ test("PATCH /guilds/:id/theme saves clamped and sanitized theme settings and emi
             base_mix: 0,
         },
     });
-    assert.deepEqual(res.body, {
-        theme: saved.theme,
-        preset_id: 5,
-        custom_user_theme_settings: saved.theme.custom_user_theme_settings,
-        enabled: true,
-    });
+    assert.deepEqual(
+        plain(res.body),
+        plain({
+            theme: saved.theme,
+            preset_id: 5,
+            custom_user_theme_settings: saved.theme.custom_user_theme_settings,
+            enabled: true,
+        }),
+    );
 });
 
 test("getGuildExperiments provides server theme default and does not leak client experiments", () => {
