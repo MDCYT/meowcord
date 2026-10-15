@@ -5,7 +5,7 @@ import { Router, Response, Request } from "express";
 import { fileTypeFromBuffer } from "file-type";
 import { ASSETS_FOLDER, Config, isRequestSignature } from "@spacebar/util";
 import { HTTPError } from "lambert-server/HTTPError";
-import { storage, internalUpload, setCacheControl, setCacheControlNotFound, fetchUpstreamAsset, safeMediaType } from "../util";
+import { storage, internalUpload, setCacheControl, setCacheControlNotFound, fetchUpstreamAsset, processImageResponse } from "../util";
 
 const BUNDLED_BADGES = path.join(ASSETS_FOLDER, "badge-icons");
 const ALLOWED_MIME_TYPES = ["image/png", "image/jpeg", "image/webp", "image/avif", "image/gif"];
@@ -42,17 +42,14 @@ router.get("/:badge_id", setCacheControl, async (req: Request, res: Response) =>
     const stored = await storage.get(key);
     if (!stored) {
         const png = await fs.readFile(path.join(BUNDLED_BADGES, badge_id)).catch(() => null);
-        if (png) return res.type("image/png").send(png);
+        if (png) return processImageResponse(req, res, png, "image/png");
         const svg = await fs.readFile(path.join(BUNDLED_BADGES, `${path.basename(badge_id, ".png")}.svg`)).catch(() => null);
-        if (svg) return res.type("image/svg+xml").send(svg);
+        if (svg) return processImageResponse(req, res, svg, "image/svg+xml");
     }
     const file = stored ?? (/^[0-9a-f]{32}\.png$/.test(badge_id) ? await fetchUpstreamAsset(key, `https://cdn.discordapp.com/badge-icons/${badge_id}`) : null);
     if (!file) return setCacheControlNotFound(req, res);
-    const type = await fileTypeFromBuffer(file);
 
-    res.set("Content-Type", safeMediaType(type?.mime));
-
-    return res.send(file);
+    return processImageResponse(req, res, file);
 });
 
 export default router;

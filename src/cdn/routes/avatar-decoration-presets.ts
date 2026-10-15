@@ -1,7 +1,6 @@
 import { Router, Response, Request } from "express";
-import { fileTypeFromBuffer } from "file-type";
 import { AvatarDecoration } from "@spacebar/database";
-import { storage, setCacheControl, setCacheControlNotFound, fetchUpstreamAsset, safeMediaType } from "../util";
+import { storage, setCacheControl, setCacheControlNotFound, fetchUpstreamAsset, processImageResponse } from "../util";
 
 const router = Router({ mergeParams: true });
 
@@ -20,14 +19,10 @@ router.get("/:avatar_decoration_data_asset", setCacheControl, async (req: Reques
             `https://cdn.discordapp.com/avatar-decoration-presets/${asset}.png?size=240&passthrough=${passthrough}`,
         );
         if (!upstream) return setCacheControlNotFound(req, res);
-        res.set("Content-Type", (await fileTypeFromBuffer(upstream))?.mime ?? "image/png");
-        return res.send(upstream);
+        return processImageResponse(req, res, upstream);
     }
-    const type = await fileTypeFromBuffer(file);
 
-    res.set("Content-Type", safeMediaType(type?.mime));
-
-    return res.send(file);
+    return processImageResponse(req, res, file);
 });
 
 async function tryReturnFromCollectiblesShop(req: Request, res: Response, avatar_decoration_data_asset: string) {
@@ -43,11 +38,7 @@ async function tryReturnFromCollectiblesShop(req: Request, res: Response, avatar
         file = await storage.get(basePath + "/static");
     } else return false;
 
-    const type = await fileTypeFromBuffer(file!);
-
-    res.set("Content-Type", safeMediaType(type?.mime));
-
-    res.send(file);
+    await processImageResponse(req, res, file!);
     return true;
 }
 

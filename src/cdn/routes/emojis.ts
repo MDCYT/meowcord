@@ -3,7 +3,7 @@ import { Router, Response, Request } from "express";
 import { fileTypeFromBuffer } from "file-type";
 import { HTTPError } from "lambert-server/HTTPError";
 import { Config, isRequestSignature } from "@spacebar/util";
-import { storage, internalUpload, setCacheControl, setCacheControlNotFound, safeMediaType } from "../util";
+import { storage, internalUpload, setCacheControl, setCacheControlNotFound, processImageResponse } from "../util";
 import { extension, sendRemoteFallback } from "../util/federationMedia";
 
 // TODO: check premium and animated pfp are allowed in the config
@@ -54,11 +54,7 @@ router.get("/:emoji_id", setCacheControl, async (req: Request, res: Response) =>
     const file = await storage.get(path);
     if (!file && (await sendRemoteFallback(req, res, emoji_id, (remote) => `/${pathPrefix}/${remote}${extension(String(req.params.emoji_id))}`))) return;
     if (!file) return setCacheControlNotFound(req, res);
-    const type = await fileTypeFromBuffer(file);
-
-    res.set("Content-Type", safeMediaType(type?.mime));
-
-    return res.send(file);
+    return processImageResponse(req, res, file);
 });
 
 router.delete("/:emoji_id", async (req: Request, res: Response) => {

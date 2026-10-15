@@ -3,7 +3,7 @@ import { Router, Response, Request } from "express";
 import { fileTypeFromBuffer } from "file-type";
 import { HTTPError } from "lambert-server/HTTPError";
 import { Config, isRequestSignature } from "@spacebar/util";
-import { storage, internalUpload, setCacheControl, setCacheControlNotFound, fetchUpstreamAsset, safeMediaType } from "../util";
+import { storage, internalUpload, setCacheControl, setCacheControlNotFound, fetchUpstreamAsset, processImageResponse } from "../util";
 
 // TODO: check premium and animated pfp are allowed in the config
 // TODO: generate different sizes of icon
@@ -52,11 +52,8 @@ router.get("/:guild_id", setCacheControl, async (req: Request, res: Response) =>
 
     const file = await storage.get(path);
     if (!file) return setCacheControlNotFound(req, res);
-    const type = await fileTypeFromBuffer(file);
 
-    res.set("Content-Type", safeMediaType(type?.mime));
-
-    return res.send(file);
+    return processImageResponse(req, res, file);
 });
 
 export const getAvatar = async (req: Request, res: Response) => {
@@ -71,11 +68,8 @@ export const getAvatar = async (req: Request, res: Response) => {
             ? await fetchUpstreamAsset(path, `https://cdn.discordapp.com/app-icons/${guild_id}/${hash}.png?size=1024`)
             : null);
     if (!file) return setCacheControlNotFound(req, res);
-    const type = await fileTypeFromBuffer(file);
 
-    res.set("Content-Type", safeMediaType(type?.mime));
-
-    return res.send(file);
+    return processImageResponse(req, res, file);
 };
 
 router.get("/:guild_id/:hash", setCacheControl, getAvatar);

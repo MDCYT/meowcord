@@ -3,7 +3,7 @@ import { Router, Response, Request } from "express";
 import { fileTypeFromBuffer } from "file-type";
 import { HTTPError } from "lambert-server/HTTPError";
 import { Config, isRequestSignature } from "@spacebar/util";
-import { storage, internalUpload, setCacheControl, setCacheControlNotFound, safeMediaType } from "../util";
+import { storage, internalUpload, setCacheControl, setCacheControlNotFound, processImageResponse } from "../util";
 import { sendRemoteFallback } from "../util/federationMedia";
 
 // TODO: check premium and animated pfp are allowed in the config
@@ -53,11 +53,8 @@ router.get("/:guild_id", setCacheControl, async (req: Request, res: Response) =>
 
     const file = await storage.get(path);
     if (!file) return setCacheControlNotFound(req, res);
-    const type = await fileTypeFromBuffer(file);
 
-    res.set("Content-Type", safeMediaType(type?.mime));
-
-    return res.send(file);
+    return processImageResponse(req, res, file);
 });
 
 export const getAvatar = async (req: Request, res: Response) => {
@@ -69,11 +66,8 @@ export const getAvatar = async (req: Request, res: Response) => {
     const file = await storage.get(path);
     if (!file && (await sendRemoteFallback(req, res, guild_id, (remote) => `/${pathPrefix}/${remote}/${req.params.hash}`))) return;
     if (!file) return setCacheControlNotFound(req, res);
-    const type = await fileTypeFromBuffer(file);
 
-    res.set("Content-Type", safeMediaType(type?.mime));
-
-    return res.send(file);
+    return processImageResponse(req, res, file);
 };
 
 router.get("/:guild_id/:hash", setCacheControl, getAvatar);

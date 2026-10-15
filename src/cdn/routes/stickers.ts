@@ -6,7 +6,7 @@ import { Config, isRequestSignature } from "@spacebar/util";
 import { Sticker } from "@spacebar/database";
 import { StickerFormatType, StickerType } from "@spacebar/schemas";
 import { ensureStandardStickerPacks } from "@spacebar/api/util";
-import { storage, internalUpload, setCacheControl, setCacheControlNotFound, fetchUpstreamAsset, safeMediaType } from "../util";
+import { storage, internalUpload, setCacheControl, setCacheControlNotFound, fetchUpstreamAsset, safeMediaType, processImageResponse } from "../util";
 import { extension, sendRemoteFallback } from "../util/federationMedia";
 
 const ANIMATED_MIME_TYPES = ["image/apng", "image/gif", "image/gifv"];
@@ -53,10 +53,9 @@ router.get("/:sticker_id", setCacheControl, async (req: Request, res: Response) 
     if (!file && (await sendRemoteFallback(req, res, sticker_id, (remote) => `/${pathPrefix}/${remote}${extension(String(req.params.sticker_id))}`))) return;
     if (!file) return setCacheControlNotFound(req, res);
     const type = await fileTypeFromBuffer(file);
+    const contentType = type ? safeMediaType(type.mime) : isLottie(file) ? "application/json" : "application/octet-stream";
 
-    res.set("Content-Type", type ? safeMediaType(type.mime) : isLottie(file) ? "application/json" : "application/octet-stream");
-
-    return res.send(file);
+    return processImageResponse(req, res, file, contentType);
 });
 
 function isLottie(buffer: Buffer) {

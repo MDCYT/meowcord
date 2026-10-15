@@ -8,7 +8,7 @@ import imageSize from "image-size";
 import { HTTPError } from "lambert-server/HTTPError";
 import { Attachment, CloudAttachment, getDatabase } from "@spacebar/database";
 import { Config, extractVideoFrame, hasValidSignature, readVideoDimensions, NewUrlUserSignatureData, Snowflake, UrlSignResult, isRequestSignature } from "@spacebar/util";
-import { storage, multer, setCacheControl, safeMediaType } from "../util";
+import { storage, multer, setCacheControl, safeMediaType, isImageProcessingEnabled, processImageResponse } from "../util";
 import { InternalCdnAttachment } from "@spacebar/util/dtos/MessageOptions";
 
 import { declaredCloudUploadLimit, requireCloudUploadReservation, requireInternalUploadSignature } from "../util/cloudUploads";
@@ -138,6 +138,25 @@ router.get("/:channel_id/:attachment_id/:filename", setCacheControl, async (req:
                 }
                 res.set("Content-Type", "image/jpeg");
                 res.send(frame);
+                await finished(res);
+                return;
+            } finally {
+                releasePreview();
+            }
+        }
+        if (
+            isImageProcessingEnabled() &&
+            type?.mime.startsWith("image/") &&
+            type?.mime !== "image/svg+xml" &&
+            (req.query.size || req.query.width || req.query.height || req.query.format || req.query.quality || req.query.animated !== undefined) &&
+            file.size <= 25 * 1024 * 1024
+        ) {
+            const releasePreview = admitPreview(file.size);
+            try {
+                const chunks: Buffer[] = [];
+                for await (const chunk of inspected.stream) chunks.push(Buffer.from(chunk));
+                const fullBuffer = Buffer.concat(chunks, file.size);
+                await processImageResponse(req, res, fullBuffer, type.mime);
                 await finished(res);
                 return;
             } finally {

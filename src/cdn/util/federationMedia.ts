@@ -3,6 +3,8 @@ import { Request, Response } from "express";
 import { parseByteRange } from "@spacebar/util";
 import { FederationMediaError, fetchRemoteMedia, federationMediaCacheSeconds, remoteMediaFor, RemoteMedia } from "@spacebar/api/util/utility/federationMedia";
 
+import { processImageResponse } from "./imageTransformer";
+
 const CONTENT_SECURITY_POLICY = "default-src 'none'; img-src 'self' data:; media-src 'self'; style-src 'unsafe-inline'; sandbox";
 
 export const requestSearch = (req: Request) => {
@@ -26,13 +28,24 @@ export const sendRemoteMedia = async (req: Request, res: Response, instance: str
     try {
         media = await fetchRemoteMedia(instance, pathname, search);
     } catch (error) {
-        return sendFederationError(res, error);
+        if (search && error instanceof FederationMediaError && error.status === 404) {
+            try {
+                media = await fetchRemoteMedia(instance, pathname, "");
+            } catch {
+                return sendFederationError(res, error);
+            }
+        } else {
+            return sendFederationError(res, error);
+        }
     }
-    res.setHeader("Content-Type", media.contentType);
     res.setHeader("Cache-Control", `public, max-age=${federationMediaCacheSeconds()}`);
     res.setHeader("Content-Security-Policy", CONTENT_SECURITY_POLICY);
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    if (!req.headers.range && (media.contentType.startsWith("image/") || media.contentType === "image/svg+xml")) {
+        return processImageResponse(req, res, media.body, media.contentType);
+    }
+    res.setHeader("Content-Type", media.contentType);
     res.setHeader("Accept-Ranges", "bytes");
     if (media.etag) res.setHeader("ETag", media.etag);
     if (media.lastModified) res.setHeader("Last-Modified", media.lastModified);

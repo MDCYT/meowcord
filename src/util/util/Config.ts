@@ -71,6 +71,16 @@ export class Config {
         if (process.env.IPDATA_API_KEY_PATH) config.security.ipdataApiKey = await Config.readSecret("IPDATA_API_KEY_PATH");
         if (process.env.REQUEST_SIGNATURE_PATH) config.security.requestSignature = await Config.readSecret("REQUEST_SIGNATURE_PATH");
         if (process.env.KLIPY_API_KEY_PATH) config.integrations.gifs.klipy.apiKeyPath = process.env.KLIPY_API_KEY_PATH;
+        if (process.env.CDN_RESIZE_IMAGES !== undefined) {
+            const enabled = process.env.CDN_RESIZE_IMAGES === "true";
+            config.cdn.resizeImages = enabled;
+            config.cdn.imageProcessing.enabled = enabled;
+        }
+        if (process.env.CDN_IMAGE_PROCESSING !== undefined) {
+            const enabled = process.env.CDN_IMAGE_PROCESSING === "true";
+            config.cdn.resizeImages = enabled;
+            config.cdn.imageProcessing.enabled = enabled;
+        }
 
         await this.set(config);
         validateFinalConfig(config);

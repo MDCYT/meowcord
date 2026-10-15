@@ -7,8 +7,16 @@ export class CdnConfiguration extends EndpointConfiguration {
     proxyCacheHeaderSeconds: number = 60 * 60 * 24;
     maxAttachmentSize: number = 500 * 1024 * 1024;
     storageQuota: StorageQuotaConfiguration = new StorageQuotaConfiguration();
+    resizeImages: boolean = false;
+    imageProcessing: CdnImageProcessingConfiguration = new CdnImageProcessingConfiguration();
+}
 
-    // limits: CdnLimitsConfiguration = new CdnLimitsConfiguration();
+export class CdnImageProcessingConfiguration {
+    enabled: boolean = false;
+    maxDimension: number = 4096;
+    minDimension: number = 16;
+    defaultQuality: number = 100;
+    cacheMemoryBytes: number = 64 * 1024 * 1024;
 }
 
 export class CdnLimitsConfiguration {

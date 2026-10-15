@@ -5,7 +5,7 @@ import { Router, Response, Request } from "express";
 import { fileTypeFromBuffer } from "file-type";
 import { Config, DEFAULT_AVATARS_FOLDER, defaultAvatarSvg, isRequestSignature } from "@spacebar/util";
 import { HTTPError } from "lambert-server/HTTPError";
-import { storage, internalUpload, setCacheControl, safeMediaType } from "../util";
+import { storage, internalUpload, setCacheControl, processImageResponse } from "../util";
 import { sendRemoteFallback } from "../util/federationMedia";
 
 // TODO: check premium and animated pfp are allowed in the config
@@ -56,11 +56,8 @@ router.get("/:user_id", setCacheControl, async (req: Request, res: Response) => 
 
     const file = await storage.get(path);
     if (!file) throw new HTTPError("not found", 404);
-    const type = await fileTypeFromBuffer(file);
 
-    res.set("Content-Type", safeMediaType(type?.mime));
-
-    return res.send(file);
+    return processImageResponse(req, res, file);
 });
 
 export const getAvatar = async (req: Request, res: Response) => {
@@ -73,15 +70,13 @@ export const getAvatar = async (req: Request, res: Response) => {
     if (!file && (await sendRemoteFallback(req, res, user_id, (remote) => `/avatars/${remote}/${req.params.hash}`))) return;
     if (!file && user_id === CLIENT_WUMPUS_USER_ID) {
         const fallback = join(DEFAULT_AVATARS_FOLDER, "0.png");
-        if (await fs.stat(fallback).catch(() => null)) return res.type("png").sendFile(fallback, { cacheControl: false, dotfiles: "allow" });
+        const fallbackData = await fs.readFile(fallback).catch(() => null);
+        if (fallbackData) return processImageResponse(req, res, fallbackData, "image/png");
         return res.type("image/svg+xml").send(defaultAvatarSvg(0));
     }
     if (!file) throw new HTTPError("not found", 404);
-    const type = await fileTypeFromBuffer(file);
 
-    res.set("Content-Type", safeMediaType(type?.mime));
-
-    return res.send(file);
+    return processImageResponse(req, res, file);
 };
 
 router.get("/:user_id/:hash", setCacheControl, getAvatar);

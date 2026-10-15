@@ -3,7 +3,7 @@ import { Request, Response, Router } from "express";
 import { fileTypeFromBuffer } from "file-type";
 import { HTTPError } from "lambert-server/HTTPError";
 import { Config, isRequestSignature } from "@spacebar/util";
-import { storage, internalUpload, setCacheControl, safeMediaType } from "../util";
+import { storage, internalUpload, setCacheControl, processImageResponse } from "../util";
 import { sendRemoteMemberMedia } from "../util/federationMedia";
 
 // TODO: check premium and animated pfp are allowed in the config
@@ -53,11 +53,8 @@ router.get("/", setCacheControl, async (req: Request, res: Response) => {
 
     const file = await storage.get(path);
     if (!file) throw new HTTPError("not found", 404);
-    const type = await fileTypeFromBuffer(file);
 
-    res.set("Content-Type", safeMediaType(type?.mime));
-
-    return res.send(file);
+    return processImageResponse(req, res, file);
 });
 
 router.get("/:hash", setCacheControl, async (req: Request, res: Response) => {
@@ -69,11 +66,8 @@ router.get("/:hash", setCacheControl, async (req: Request, res: Response) => {
     const file = await storage.get(path);
     if (!file && (await sendRemoteMemberMedia(req, res, guild_id, user_id, req.baseUrl.endsWith("/banners") ? "banners" : "avatars", req.params.hash as string))) return;
     if (!file) throw new HTTPError("not found", 404);
-    const type = await fileTypeFromBuffer(file);
 
-    res.set("Content-Type", safeMediaType(type?.mime));
-
-    return res.send(file);
+    return processImageResponse(req, res, file);
 });
 
 router.delete("/:id", async (req: Request, res: Response) => {
